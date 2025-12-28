@@ -1,10 +1,9 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.services.clinic_service import ClinicService
 from app.schemas.clinic_schema import ClinicCreate
-from app.dependencies.authorization_dependency import get_current_user
+from app.services.clinic_service import ClinicService
 from app.core.api_response import success_response, error_response
 from app.exceptions.base_exception import AppException
 
@@ -18,7 +17,7 @@ class ClinicController:
         self,
         request: ClinicCreate,
         db: AsyncSession = Depends(get_db),
-        current_user: dict = Depends(get_current_user)
+        current_user: dict = Depends()
     ):
         try:
             clinic = await self.service.create_clinic(
