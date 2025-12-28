@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-
+import app.db.models
 from app.core.config import settings
 from app.db.base import Base
 import app.db.models   # 🔥 THIS WAS MISSING
