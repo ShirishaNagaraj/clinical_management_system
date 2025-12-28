@@ -11,4 +11,5 @@ class PatientDocumentResponse(AuditSchema):
     document_id: int
     patient_id: int
     document_type: str
-    document_path: str
+    file_name: str
+    file_path: str
