@@ -7,13 +7,14 @@ from app.core.config import settings
 
 UPLOAD_DIR = "uploads/patients"
 
+# Cloudinary config
 cloudinary.config(
     cloud_name=settings.CLOUDINARY_CLOUD_NAME,
     api_key=settings.CLOUDINARY_API_KEY,
     api_secret=settings.CLOUDINARY_API_SECRET,
 )
 
-# ---------- BASE STORAGE ----------
+# ---------- BASE ----------
 class FileStorage:
     async def upload(self, file: UploadFile, patient_id: int) -> str:
         raise NotImplementedError
@@ -39,7 +40,7 @@ class CloudinaryStorage(FileStorage):
     async def upload(self, file: UploadFile, patient_id: int) -> str:
         result = cloudinary.uploader.upload(
             await file.read(),
-            folder=f"patients/{patient_id}",
+            folder=f"patients/{patient_id}"
         )
         return result["secure_url"]
 
