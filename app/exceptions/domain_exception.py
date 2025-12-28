@@ -1,6 +1,11 @@
 from .base_exception import AppException
 
 # ---------- CLINIC ----------
+
+class ClinicAlreadyExistsException(AppException):
+    def __init__(self):
+        super().__init__("Clinic already exists", 400)
+        
 class ClinicNotFoundException(AppException):
     def __init__(self):
         super().__init__("Clinic not found", 404)
