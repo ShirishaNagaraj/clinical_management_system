@@ -1,33 +1,41 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.models.appointment_model import Appointment
-from app.exceptions.domain_exception import AppointmentNotFoundException
+from sqlalchemy import select
+
+from app.db.models.appointment_model import AppointmentCreate
 
 
-async def create_appointment(data, db: AsyncSession):
-    appointment = Appointment(
-        clinic_id=data.clinic_id,
-        doctor_id=data.doctor_id,
-        patient_id=data.patient_id,
-        appointment_time=data.appointment_time,
-        appointment_status="BOOKED"
-    )
-    db.add(appointment)
-    await db.commit()
-    await db.refresh(appointment)
-    return appointment
+class AppointmentService:
 
+    async def book_appointment(
+        self,
+        db: AsyncSession,
+        data: AppointmentCreate 
+    ) -> AppointmentCreate:
 
-async def list_appointments(db: AsyncSession):
-    result = await db.execute(
-        Appointment.__table__.select()
-    )
-    return result.fetchall()
-
-
-async def doctor_appointments(doctor_id: int, db: AsyncSession):
-    result = await db.execute(
-        Appointment.__table__.select().where(
-            Appointment.doctor_id == doctor_id
+        appointment = AppointmentCreate(
+            clinic_id=data.clinic_id,
+            doctor_id=data.doctor_id,
+            patient_id=data.patient_id,
+            appointment_time=data.appointment_time,
+            appointment_status="BOOKED"
         )
-    )
-    return result.fetchall()
+
+        db.add(appointment)
+        await db.commit()
+        await db.refresh(appointment)
+
+        return appointment
+
+    async def list_appointments(self, db: AsyncSession):
+        result = await db.execute(select(AppointmentCreate))
+        return result.scalars().all()
+
+    async def list_doctor_appointments(
+        self,
+        db: AsyncSession,
+        doctor_id: int
+    ):
+        result = await db.execute(
+            select(AppointmentCreate).where(AppointmentCreate.doctor_id == doctor_id)
+        )
+        return result.scalars().all()
