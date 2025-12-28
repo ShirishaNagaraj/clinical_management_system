@@ -1,16 +1,18 @@
-# Environment variables
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
 .env
 
 # SQLite database
 clinic.db
+*.sqlite3
 
-# Virtual environment
-venv/
+# VS Code
+.vscode/
 
-# Python cache
-__pycache__/
-*.pyc
-
-# OS files
+# OS
 .DS_Store
 Thumbs.db
