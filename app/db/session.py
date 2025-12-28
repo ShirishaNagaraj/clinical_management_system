@@ -5,7 +5,6 @@ from fastapi import FastAPI
 import app.db.models
 from app.core.config import settings
 from app.db.base import Base
-import app.db.models   # 🔥 THIS WAS MISSING
 
 engine = create_async_engine(
     settings.DATABASE_URL,
