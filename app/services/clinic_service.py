@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.models.clinic_model import Clinic
-from app.schemas.clinic_schema import ClinicCreate
-from app.exceptions.domain_exception import ClinicInactiveException
+from sqlalchemy import select
+
+from app.db.models.clinic_model import ClinicCreate
+from app.exceptions.domain_exception import ClinicAlreadyExistsException
 
 
 class ClinicService:
@@ -12,7 +13,14 @@ class ClinicService:
         data: ClinicCreate,
         user_id: int
     ):
-        clinic = Clinic(
+        # Check duplicate clinic
+        result = await db.execute(
+            select(ClinicCreate).where(ClinicCreate.clinic_name == data.clinic_name)
+        )
+        if result.scalar_one_or_none():
+            raise ClinicAlreadyExistsException()
+
+        clinic = ClinicCreate(
             clinic_name=data.clinic_name,
             clinic_address=data.clinic_address,
             is_active=data.is_active,
