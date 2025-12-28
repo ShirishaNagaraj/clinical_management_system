@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from db.base import Base
+from app.db.base import Base,AuditMixin
 
-class Appointment(Base):
+class Appointment(AuditMixin,Base):
     __tablename__ = "appointment"
 
     appointment_id = Column(Integer, primary_key=True, index=True)

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean
-from db.base import Base
+from app.db.base import Base,AuditMixin
 
-class Clinic(Base):
+class Clinic(AuditMixin,Base):
     __tablename__ = "clinic"
 
     clinic_id = Column(Integer, primary_key=True, index=True)

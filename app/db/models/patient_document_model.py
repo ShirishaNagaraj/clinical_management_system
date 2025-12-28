@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
-from db.base import Base
+from app.db.base import Base,AuditMixin
 
-class PatientDocument(Base):
+class PatientDocument(AuditMixin,Base):
     __tablename__ = "patient_document"
 
     document_id = Column(Integer, primary_key=True, index=True)
