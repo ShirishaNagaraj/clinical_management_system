@@ -1,7 +1,6 @@
 from fastapi import FastAPI
-
 from app.db.session import lifespan
-import app.db.models  # 🔥 REQUIRED to create tables
+from app.middleware.request_logging import request_logging_middleware
 
 # Routers
 from app.routers.clinic_router import router as clinic_router
@@ -12,7 +11,8 @@ from app.routers.patient_document_router import router as document_router
 
 app = FastAPI(lifespan=lifespan)
 
-# Health check
+app.middleware("http")(request_logging_middleware)
+
 @app.get("/")
 async def root():
     return {"status": True, "message": "App running"}
