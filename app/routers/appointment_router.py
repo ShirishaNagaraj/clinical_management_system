@@ -5,16 +5,15 @@ from app.controllers.appointment_controller import AppointmentController
 from app.db.session import get_db
 from app.schemas.appointment_schema import AppointmentCreate
 
-router = APIRouter(
-    prefix="/appointments",
-    tags=["Appointment"]
+router = APIRouter(tags=["Appointment"],
+    responses={200: {"content": None}, 422: {"content": None}}
 )
 
 controller = AppointmentController()
 
 
 # 🔓 NO JWT – Book appointment
-@router.post("")
+@router.post("/patientappointment")
 async def book_appointment(
     data: AppointmentCreate,
     db: AsyncSession = Depends(get_db)
@@ -26,7 +25,7 @@ async def book_appointment(
 
 
 # 🔓 NO JWT – View all appointments
-@router.get("")
+@router.get("/getpatientappointment")
 async def list_appointments(
     db: AsyncSession = Depends(get_db)
 ):

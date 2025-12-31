@@ -4,19 +4,19 @@ from fastapi import UploadFile, File, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.services.patient_service import PatientService
+from app.services.patient_document_service import PatientDocumentService
 from app.core.api_response import success_response, error_response
 from app.exceptions.base_exception import AppException
 
 
-class PatientController:
+class PatientDocument:
 
     def __init__(self):
-        self.service = PatientService()
+        self.service = PatientDocumentService()
 
-    # ================================
-    # 1️⃣ UPLOAD DOCUMENTS API
-    # ================================
+  
+    # UPLOAD DOCUMENTS API
+   
     async def upload_documents(
         self,
         patient_id: int,
@@ -44,18 +44,12 @@ class PatientController:
     async def patient_visit(
         self,
         patient_id: int,
-        doctor_id: int,
-        appointment_time: datetime,
-        files: List[UploadFile] = File(...),
-        db: AsyncSession = Depends(get_db)
+        db: AsyncSession
     ):
         try:
             result = await self.service.patient_visit(
                 db=db,
-                patient_id=patient_id,
-                doctor_id=doctor_id,
-                appointment_time=appointment_time,
-                files=files
+                patient_id=patient_id
             )
 
             return success_response(

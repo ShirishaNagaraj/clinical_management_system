@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.security import create_access_token
 from app.schemas.clinic_schema import ClinicCreate
 from app.services.clinic_service import ClinicService
 from app.core.api_response import success_response
-
+from fastapi import HTTPException
 
 class ClinicController:
 
@@ -13,13 +13,12 @@ class ClinicController:
     async def create_clinic(
         self,
         data: ClinicCreate,
-        db: AsyncSession,
-        current_user: dict
+        db: AsyncSession
     ):
         clinic = await self.service.create_clinic(
             db=db,
             data=data,
-            user_id=current_user["user_id"]
+            user_id=None
         )
 
         return success_response(
@@ -31,3 +30,29 @@ class ClinicController:
             },
             message="Clinic created successfully"
         )
+    
+    def __init__(self):
+        self.service = ClinicService()
+
+    async def clinic_login(
+        self,
+        clinic_id: int,
+        db: AsyncSession
+    ):
+        clinic = await self.service.get_clinic_by_id(db, clinic_id)
+
+        if not clinic:
+            return {
+                "status": False,
+                "message": "Invalid clinic_id"
+            }
+
+        token = create_access_token(
+            {"clinic_id": clinic.clinic_id}
+        )
+
+        return {
+            "status": True,
+            "access_token": token,
+            "token_type": "Bearer"
+        }

@@ -13,7 +13,7 @@ from app.exceptions.domain_exception import (
 from app.utils.file_utils import get_storage
 
 
-class PatientService:
+class PatientDocumentService:
 
     # ================================
     # 1️⃣ UPLOAD DOCUMENTS ONLY
@@ -54,50 +54,18 @@ class PatientService:
     async def patient_visit(
         self,
         db: AsyncSession,
-        patient_id: int,
-        doctor_id: int,
-        appointment_time: datetime,
-        files: List[UploadFile]
+        patient_id: int
     ):
-        try:
-            async with db.begin():
+        patient = await db.get(Patient, patient_id)
+        if not patient:
+            raise PatientNotFoundException()
 
-                # 1️⃣ Patient
-                patient = await db.get(Patient, patient_id)
-                if not patient:
-                    raise PatientNotFoundException()
+        patient.patient_status = "ACTIVE"
 
-                patient.patient_status = "ACTIVE"
-                db.add(patient)
+        await db.commit()
 
-                # 2️⃣ Appointment
-                appointment = Appointment(
-                    clinic_id=patient.clinic_id,
-                    doctor_id=doctor_id,
-                    patient_id=patient_id,
-                    appointment_time=appointment_time,
-                    appointment_status="BOOKED"
-                )
-                db.add(appointment)
-
-                # 3️⃣ Documents
-                for file in files:
-                    storage = get_storage(file)
-                    path = await storage.upload(file, patient_id)
-
-                    document = PatientDocument(
-                        patient_id=patient_id,
-                        document_type="IMAGE" if "image" in file.content_type else "FILE",
-                        file_name=file.filename,
-                        file_path=path
-                    )
-                    db.add(document)
-
-            return {
-                "patient_id": patient_id,
-                "appointment_status": "BOOKED"
-            }
-
-        except Exception:
-            await db.rollback()
-            raise DocumentUploadException()
+        return {
+            "patient_id": patient_id,
+            "status": "VISITED"
+        }
+    

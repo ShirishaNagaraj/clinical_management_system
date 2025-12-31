@@ -1,5 +1,4 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.services.patient_service import PatientService
 from app.schemas.patient_schema import PatientCreate
 from app.core.api_response import success_response
@@ -13,9 +12,10 @@ class PatientController:
     async def register_patient(
         self,
         data: PatientCreate,
-        db: AsyncSession
+        db: AsyncSession,
+        clinic_id: int
     ):
-        patient = await self.service.register_patient(db, data)
+        patient = await self.service.register_patient(db, data, clinic_id)
 
         return success_response(
             data={
@@ -28,8 +28,12 @@ class PatientController:
             message="Patient registered successfully"
         )
 
-    async def list_patients(self, db: AsyncSession):
-        patient_list = await self.service.list_patients(db)
+    async def list_patients(
+        self,
+        db: AsyncSession,
+        clinic_id: int
+    ):
+        patients = await self.service.list_patients(db, clinic_id)
 
         return success_response(
             data=[
@@ -40,23 +44,21 @@ class PatientController:
                     "phone_number": patient.phone_number,
                     "patient_status": patient.patient_status
                 }
-                for patient in patient_list
+                for patient in patients
             ],
-            message="Patients list"
+            message="Patients fetched successfully"
         )
 
     async def update_patient_status(
         self,
         patient_id: int,
         status: str,
-        db: AsyncSession,
-        current_user: dict
+        db: AsyncSession
     ):
         patient = await self.service.update_patient_status(
             db=db,
             patient_id=patient_id,
-            new_status=status,
-            user_id=current_user["user_id"]
+            new_status=status
         )
 
         return success_response(
@@ -66,3 +68,4 @@ class PatientController:
             },
             message="Patient status updated successfully"
         )
+

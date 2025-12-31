@@ -1,22 +1,29 @@
-from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token
-from app.exceptions.base_exception import AppException
+from app.db.session import get_db
+from app.db.models.clinic_model import Clinic
 
-# Reads token from: Authorization: Bearer <token>
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+security = HTTPBearer()
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    payload = decode_access_token(token)
+async def get_current_clinic(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
+    payload = decode_access_token(credentials.credentials)
 
     if not payload:
-        raise AppException("Unauthorized", 401)
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-    user_id = payload.get("user_id")
-    if not user_id:
-        raise AppException("Invalid token", 401)
+    clinic_id = payload.get("clinic_id")
+    if not clinic_id:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
 
-    return payload
+    clinic = await db.get(Clinic, clinic_id)
+    if not clinic:
+        raise HTTPException(status_code=401, detail="Clinic not found")
 
+    return clinic

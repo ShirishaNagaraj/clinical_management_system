@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-
 from app.db.models.doctor_model import Doctor
 from app.db.models.clinic_model import Clinic
 from app.exceptions.domain_exception import (
@@ -16,37 +15,44 @@ class DoctorService:
         self,
         db: AsyncSession,
         data: DoctorCreate,
-        user_id: int
+        clinic_id: int
     ) -> Doctor:
+        try:
+            # Validate clinic
+            result = await db.execute(
+                select(Clinic).where(Clinic.clinic_id == clinic_id)
+            )
+            clinic = result.scalar_one_or_none()
 
-        # Validate clinic
-        result = await db.execute(
-            select(Clinic).where(Clinic.clinic_id == data.clinic_id)
-        )
-        clinic = result.scalar_one_or_none()
+            if not clinic:
+                raise ClinicNotFoundException()
 
-        if not clinic:
-            raise ClinicNotFoundException()
+            if not clinic.is_active:
+                raise ClinicInactiveException()
 
-        if not clinic.is_active:
-            raise ClinicInactiveException()
+            doctor = Doctor(
+                clinic_id=clinic_id,
+                doctor_name=data.doctor_name,
+                specialization=data.specialization,
+                is_active=True
+            )
 
-        doctor = Doctor(
-            clinic_id=data.clinic_id,
-            doctor_name=data.doctor_name,
-            specialization=data.specialization,
-            is_active=True,
-            created_by=user_id
-        )
+            db.add(doctor)
+            await db.commit()
+            await db.refresh(doctor)
 
-        db.add(doctor)
-        await db.commit()
-        await db.refresh(doctor)
+            return doctor
 
-        return doctor
+        except (ClinicNotFoundException, ClinicInactiveException):
+            await db.rollback()
+            raise
 
-    async def list_doctors(self, db: AsyncSession):
-        result = await db.execute(
-            select(Doctor).where(Doctor.is_active == True)
-        )
+        except Exception as e:
+            await db.rollback()
+            raise Exception(f"Failed to add doctor: {str(e)}")
+        
+    async def list_doctors(self,db: AsyncSession,clinic_id: int):
+        result = await db.execute(select(Doctor).where(Doctor.clinic_id == clinic_id,Doctor.is_active == True))
         return result.scalars().all()
+    
+

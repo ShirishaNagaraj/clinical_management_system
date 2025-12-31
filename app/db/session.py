@@ -26,3 +26,9 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     yield
     await engine.dispose()
+
+# Dependency (THIS WAS MISSING)
+# -------------------------------
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session

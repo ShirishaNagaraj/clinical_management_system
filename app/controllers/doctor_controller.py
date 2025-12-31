@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.schemas.doctor_schema import DoctorResponse
 from app.services.doctor_service import DoctorService
 from app.schemas.doctor_schema import DoctorCreate
 from app.core.api_response import success_response
@@ -14,12 +14,12 @@ class DoctorController:
         self,
         data: DoctorCreate,
         db: AsyncSession,
-        current_user: dict
+        clinic_id: int
     ):
         doctor = await self.service.add_doctor(
             db=db,
             data=data,
-            user_id=current_user["user_id"]
+            clinic_id=clinic_id
         )
 
         return success_response(
@@ -32,20 +32,11 @@ class DoctorController:
             },
             message="Doctor added successfully"
         )
-
-    async def list_doctors(self, db: AsyncSession):
-        doctor_list = await self.service.list_doctors(db)
-
+    # ---------------- LIST DOCTORS BY CLINIC ----------------
+    async def list_doctors_by_clinic(self,db: AsyncSession,clinic_id: int):
+        doctors = await self.service.list_doctors(db, clinic_id)
         return success_response(
-            data=[
-                {
-                    "doctor_id": doctor.doctor_id,
-                    "clinic_id": doctor.clinic_id,
-                    "doctor_name": doctor.doctor_name,
-                    "specialization": doctor.specialization,
-                    "is_active": doctor.is_active
-                }
-                for doctor in doctor_list
-            ],
-            message="Doctors list"
-        )
+        data=doctors,
+        message="Doctors fetched successfully"
+    )
+

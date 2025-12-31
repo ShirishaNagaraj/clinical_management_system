@@ -9,3 +9,4 @@ class Patient(AuditMixin,Base):
     patient_name = Column(String(100), nullable=False)
     phone_number = Column(String(20), nullable=False)
     patient_status = Column(String(20), default="NEW")  # NEW / ACTIVE / DISCHARGED
+    

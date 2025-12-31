@@ -35,3 +35,10 @@ class ClinicService:
         await db.refresh(clinic)
 
         return clinic
+    
+    async def get_clinic_by_id(
+        self,
+        db: AsyncSession,
+        clinic_id: int
+    ):
+        return await db.get(Clinic, clinic_id)

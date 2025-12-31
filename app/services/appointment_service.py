@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from app.db.models.appointment_model import Appointment
+from app.schemas.appointment_schema import AppointmentCreate
 
-from app.db.models.appointment_model import AppointmentCreate
 
 
 class AppointmentService:
@@ -12,7 +13,7 @@ class AppointmentService:
         data: AppointmentCreate 
     ) -> AppointmentCreate:
 
-        appointment = AppointmentCreate(
+        appointment = Appointment(
             clinic_id=data.clinic_id,
             doctor_id=data.doctor_id,
             patient_id=data.patient_id,
@@ -27,7 +28,7 @@ class AppointmentService:
         return appointment
 
     async def list_appointments(self, db: AsyncSession):
-        result = await db.execute(select(AppointmentCreate))
+        result = await db.execute(select(Appointment))
         return result.scalars().all()
 
     async def list_doctor_appointments(
@@ -36,6 +37,6 @@ class AppointmentService:
         doctor_id: int
     ):
         result = await db.execute(
-            select(AppointmentCreate).where(AppointmentCreate.doctor_id == doctor_id)
+            select(Appointment).where(Appointment.doctor_id == doctor_id)
         )
         return result.scalars().all()

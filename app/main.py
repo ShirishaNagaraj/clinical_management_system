@@ -9,7 +9,8 @@ from app.routers.patient_router import router as patient_router
 from app.routers.appointment_router import router as appointment_router
 from app.routers.patient_document_router import router as document_router
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(title="Clinical Management System/swagger",lifespan=lifespan,docs_url="/clinical-management-system/swagger",swagger_ui_parameters={
+        "defaultModelsExpandDepth": -1,"tryItOutEnabled": True})
 
 app.middleware("http")(request_logging_middleware)
 

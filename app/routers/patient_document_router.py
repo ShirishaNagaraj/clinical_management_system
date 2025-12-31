@@ -1,23 +1,21 @@
 from typing import List
-from datetime import datetime
-
+from app.schemas.patient_document_schema import PatientVisitCreate
 from fastapi import APIRouter, UploadFile, File, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.controllers.patient_document_controller import PatientController
+from app.controllers.patient_document_controller import PatientDocument
 from app.db.session import get_db
 
 router = APIRouter(
-    prefix="/patients",
-    tags=["Patient Documents"]
+    tags=["Patient Documents"],responses={200: {"content": None}, 422: {"content": None}}
 )
 
-controller = PatientController()
+controller = PatientDocument()
 
-# ==================================================
-# 1️⃣ UPLOAD PATIENT DOCUMENTS
-# POST /patients/{patient_id}/documents
-# ==================================================
+
+# UPLOAD PATIENT DOCUMENTS
+
+
 @router.post("/{patient_id}/documents")
 async def upload_patient_documents(
     patient_id: int,
@@ -31,23 +29,13 @@ async def upload_patient_documents(
     )
 
 
-# ==================================================
-# 2️⃣ PATIENT VISIT (TRANSACTION API)
-# POST /patients/{patient_id}/visit
-# ==================================================
+#  PATIENT VISIT (TRANSACTION API)
+
 @router.post("/{patient_id}/visit")
 async def patient_visit(
     patient_id: int,
-    doctor_id: int,
-    appointment_time: datetime,
-    files: List[UploadFile] = File(...),
+    data: PatientVisitCreate,
     db: AsyncSession = Depends(get_db)
 ):
     return await controller.patient_visit(
-        patient_id=patient_id,
-        doctor_id=doctor_id,
-        appointment_time=appointment_time,
-        files=files,
-        db=db
-    )
-
+        patient_id=patient_id,db=db)

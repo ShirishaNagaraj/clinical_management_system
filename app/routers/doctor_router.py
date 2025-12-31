@@ -1,35 +1,39 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.controllers.doctor_controller import DoctorController
 from app.db.session import get_db
-from app.dependencies.authorization_dependency import get_current_user
 from app.schemas.doctor_schema import DoctorCreate
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.dependencies.authorization_dependency import get_current_clinic
 
 router = APIRouter(
-    prefix="/doctors",
-    tags=["Doctor"],
-    dependencies=[Depends(get_current_user)]  # 🔐 JWT applied once
+    tags=["Doctor"],responses= {200: {"content": None}, 422: {"content": None}}
 )
 
 controller = DoctorController()
 
-
+security=HTTPBearer()
 @router.post("/doctor")
 async def add_doctor(
     data: DoctorCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    credentials: HTTPAuthorizationCredentials = Depends(security),  
+    current_clinic = Depends(get_current_clinic),
+
+
 ):
     return await controller.add_doctor(
         data=data,
-        db=db,
-        current_user=current_user
+        clinic_id=current_clinic.clinic_id, 
+        db=db
     )
 
-
-@router.get("/get")
-async def list_doctors(
-    db: AsyncSession = Depends(get_db)
+@router.get("/doctor")
+async def get_doctors(
+    db: AsyncSession = Depends(get_db),
+    current_clinic = Depends(get_current_clinic)
 ):
-    return await controller.list_doctors(db)
+    return await controller.list_doctors_by_clinic(
+        db=db,
+        clinic_id=current_clinic.clinic_id
+    )
